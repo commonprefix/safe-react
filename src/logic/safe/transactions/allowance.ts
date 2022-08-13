@@ -1,6 +1,7 @@
 import BN from 'bn.js'
 import { getSpendingLimitContract, getSpendingLimitModuleAddress } from 'src/logic/contracts/spendingLimitContracts'
 import { _getChainId } from 'src/config'
+import { GAS_LIMIT_MULTIPLIER } from 'src/utils/constants'
 
 export type AllowanceTransferProps = {
   safe: string
@@ -28,9 +29,11 @@ export const estimateGasForAllowanceTransfer = async ({
 
   const spendingLimit = getSpendingLimitContract(spendingLimitModuleAddress)
 
-  return spendingLimit.methods
-    .executeAllowanceTransfer(safe, token, to, amount, paymentToken, payment, delegate, signature)
-    .estimateGas({ from: delegate })
+  return (
+    (await spendingLimit.methods
+      .executeAllowanceTransfer(safe, token, to, amount, paymentToken, payment, delegate, signature)
+      .estimateGas({ from: delegate })) * GAS_LIMIT_MULTIPLIER
+  )
 }
 
 export const checkAllowanceTransferExecution = async ({

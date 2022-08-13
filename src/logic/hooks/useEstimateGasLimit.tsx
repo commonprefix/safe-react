@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Errors, logError } from 'src/logic/exceptions/CodedException'
 import useAsync from 'src/logic/hooks/useAsync'
+import { GAS_LIMIT_MULTIPLIER } from 'src/utils/constants'
 
 export const DEFAULT_GAS_LIMIT = '0'
 
@@ -14,7 +15,7 @@ export const useEstimateGasLimit = (
 
   const [data, error] = useAsync(async () => {
     if (!isExecution || !txData) return
-    if (manualGasLimit) return manualGasLimit
+    if (manualGasLimit) return String(Number(manualGasLimit) * GAS_LIMIT_MULTIPLIER)
 
     return await estimationFn()
   }, [estimationFn, isExecution, manualGasLimit, txData])
@@ -23,7 +24,7 @@ export const useEstimateGasLimit = (
     const newGasLimit = error ? DEFAULT_GAS_LIMIT : data ? data.toString() : undefined
 
     if (newGasLimit) {
-      setGasLimit(newGasLimit)
+      setGasLimit(String(Number(newGasLimit) * GAS_LIMIT_MULTIPLIER))
     }
 
     if (error) {
